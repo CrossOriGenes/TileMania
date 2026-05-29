@@ -10,32 +10,39 @@ public class PlayerMovement : MonoBehaviour
     Vector2 moveInput;
     Rigidbody2D player;
     Animator animator;
-    CapsuleCollider2D playerCollider;
+    CapsuleCollider2D playerBodyCollider;
+    BoxCollider2D playerFeetCollider;
     float gravity;
+    bool isAlive = true;
 
     void Start()
     {
         player = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-        playerCollider = GetComponent<CapsuleCollider2D>();
+        playerBodyCollider = GetComponent<CapsuleCollider2D>();
+        playerFeetCollider = GetComponent<BoxCollider2D>();
         gravity = player.gravityScale;
+        GameManager.instance.playerHealth.SetActive(true);
     }
 
     void Update()
     {
+        if (!isAlive) return;
         Run();
         FlipPlayer();
         ClimbLadder();
+        Die();
     }
 
     void OnMove(InputValue value)
     {
+        if (!isAlive) return;
         moveInput = value.Get<Vector2>();
     }
 
     void OnJump(InputValue value)
     {
-        if (!playerCollider.IsTouchingLayers(LayerMask.GetMask("Ground"))) return;
+        if (!playerFeetCollider.IsTouchingLayers(LayerMask.GetMask("Ground"))) return;
         if (value.isPressed)
         {
             player.linearVelocity += new Vector2(0f, jumpSpeed);
@@ -61,9 +68,10 @@ public class PlayerMovement : MonoBehaviour
 
     void ClimbLadder()
     {
-        if (!playerCollider.IsTouchingLayers(LayerMask.GetMask("Climbing")))
+        if (!playerFeetCollider.IsTouchingLayers(LayerMask.GetMask("Climbing")))
         {
             player.gravityScale = gravity;
+            animator.SetBool("isClimbing", false);
             return;  
         } 
         player.gravityScale = 0f;
@@ -71,5 +79,21 @@ public class PlayerMovement : MonoBehaviour
         player.linearVelocity = climbVelocity;
         bool hasVerticalSpeed = Mathf.Abs(player.linearVelocityY) > Mathf.Epsilon;
         animator.SetBool("isClimbing", hasVerticalSpeed);
+    }
+
+    void Die()
+    {
+        if (playerBodyCollider.IsTouchingLayers(LayerMask.GetMask("Enemies")) ||
+        playerFeetCollider.IsTouchingLayers(LayerMask.GetMask("Enemies")) || 
+        playerFeetCollider.IsTouchingLayers(LayerMask.GetMask("Hazards")))
+        {
+            isAlive = false;
+            animator.SetTrigger("Dying");
+            Invoke(nameof(ShowGameOver), 0.5f);
+        }
+    }
+    void ShowGameOver()
+    {
+        GameManager.instance.GameOver();
     }
 }

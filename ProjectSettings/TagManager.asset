@@ -15,6 +15,9 @@ TagManager:
   - Climbing
   - Player
   - Background
+  - Bouncing
+  - Enemies
+  - Hazards
   - 
   - 
   - 
@@ -22,10 +25,7 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
-  - 
-  - 
+  - Overlays
   - 
   - 
   - 
@@ -53,8 +53,17 @@ TagManager:
   - name: Climbing
     uniqueID: 842168603
     locked: 0
+  - name: Enemy
+    uniqueID: 3315107089
+    locked: 0
+  - name: Hazards
+    uniqueID: 283070217
+    locked: 0
   - name: Player
     uniqueID: 2658957477
+    locked: 0
+  - name: Overlays
+    uniqueID: 1531936625
     locked: 0
   m_RenderingLayers:
   - Default
