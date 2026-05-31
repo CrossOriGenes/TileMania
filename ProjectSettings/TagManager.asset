@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Waterbody
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -18,8 +20,8 @@ TagManager:
   - Bouncing
   - Enemies
   - Hazards
-  - 
-  - 
+  - Bullets
+  - Interactables
   - 
   - 
   - 
@@ -58,6 +60,9 @@ TagManager:
     locked: 0
   - name: Hazards
     uniqueID: 283070217
+    locked: 0
+  - name: Interactables
+    uniqueID: 2400054227
     locked: 0
   - name: Player
     uniqueID: 2658957477

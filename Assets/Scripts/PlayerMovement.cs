@@ -3,9 +3,13 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public static PlayerMovement instance;
+
     [SerializeField] float playerMoveSpeed = 9.55f;
     [SerializeField] float jumpSpeed = 23f;
     [SerializeField] float climbSpeed = 3f;
+    [SerializeField] GameObject bullet;
+    [SerializeField] Transform gun;
 
     Vector2 moveInput;
     Rigidbody2D player;
@@ -13,16 +17,17 @@ public class PlayerMovement : MonoBehaviour
     CapsuleCollider2D playerBodyCollider;
     BoxCollider2D playerFeetCollider;
     float gravity;
-    bool isAlive = true;
+    bool isAlive = true, hasTouchedWater = false;
+    int waterContacts = 0;
 
     void Start()
     {
+        instance = this;
         player = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         playerBodyCollider = GetComponent<CapsuleCollider2D>();
         playerFeetCollider = GetComponent<BoxCollider2D>();
         gravity = player.gravityScale;
-        GameManager.instance.playerHealth.SetActive(true);
     }
 
     void Update()
@@ -49,6 +54,12 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void OnAttack(InputValue value)
+    {
+        if (!isAlive) return;
+        Instantiate(bullet, gun.position, transform.rotation);
+    }
+
     void Run()
     {
         Vector2 playerVelocity = new Vector2(moveInput.x * playerMoveSpeed, player.linearVelocityY);
@@ -72,8 +83,8 @@ public class PlayerMovement : MonoBehaviour
         {
             player.gravityScale = gravity;
             animator.SetBool("isClimbing", false);
-            return;  
-        } 
+            return;
+        }
         player.gravityScale = 0f;
         Vector2 climbVelocity = new Vector2(player.linearVelocityX, moveInput.y * climbSpeed);
         player.linearVelocity = climbVelocity;
@@ -81,10 +92,36 @@ public class PlayerMovement : MonoBehaviour
         animator.SetBool("isClimbing", hasVerticalSpeed);
     }
 
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!collision.CompareTag("Waterbody")) return;
+
+        waterContacts++;
+
+        if (!hasTouchedWater)
+        {
+            hasTouchedWater = true;
+            PlayerHealthManager.instance.TakeDamage();
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D collision)
+    {
+        if (!collision.CompareTag("Waterbody")) return;
+
+        waterContacts--;
+
+        if (waterContacts <= 0)
+        {
+            waterContacts = 0;
+            hasTouchedWater = false;
+        }
+    }
+
     void Die()
     {
         if (playerBodyCollider.IsTouchingLayers(LayerMask.GetMask("Enemies")) ||
-        playerFeetCollider.IsTouchingLayers(LayerMask.GetMask("Enemies")) || 
+        playerFeetCollider.IsTouchingLayers(LayerMask.GetMask("Enemies")) ||
         playerFeetCollider.IsTouchingLayers(LayerMask.GetMask("Hazards")))
         {
             isAlive = false;
@@ -92,8 +129,29 @@ public class PlayerMovement : MonoBehaviour
             Invoke(nameof(ShowGameOver), 0.5f);
         }
     }
+
     void ShowGameOver()
     {
         GameManager.instance.GameOver();
+    }
+
+    // Setters
+    public bool IsPlayerAlive()
+    {
+        return isAlive;
+    }
+    public void SetPlayerAlive(bool flag)
+    {
+        isAlive = flag;
+    }
+
+    // Getters
+    public Animator GetAnimator()
+    {
+        return animator;
+    }
+    public Rigidbody2D GetPlayer()
+    {
+        return player;
     }
 }

@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         instance = this;
+        playerHealth.SetActive(true);
     }
 
     public void GameOver()
@@ -23,8 +24,9 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         CancelInvoke();
+        PlayerHealthManager.instance.ResetHealth();
         gameOverPanel.SetActive(false);
-        // playerHealth.SetActive(true);
+        playerHealth.SetActive(true);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
